@@ -1,30 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Translation Calculator Motarjemshodan</title>
-  <!-- لود کردن فونت وزیرمتن و فریمورک Tailwind CSS -->
+  <title>نرخ‌نامه و ماشین‌حساب قیمت ترجمه | مترجم‌شدن</title>
+
+  <!-- فونت وزیرمتن و Tailwind CSS از CDN پایداری -->
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    (function() {
-    var TRANSLATION_RATES_URLS = [
-      './translation-rates-1405-1.json'
-    ];
-    var PREFIX = 'rtc-';
-    var CURRENCY = 'تومان';
-  </script>
+
   <style>
-    #wp-rtc-container {
+    body {
       font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif !important;
-    }
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
     }
     .glass-input {
       background: rgba(255, 255, 255, 0.6);
@@ -40,419 +27,542 @@
       background-color: #ffffff;
       color: #334155;
     }
-    .py-10 {
-      padding-bottom: 4.5rem !important;
+    code, pre {
+      font-family: monospace, monospace;
+      direction: ltr;
+      text-align: left;
     }
   </style>
 </head>
-<body>
+<body class="bg-[#f8fafc] text-slate-800 antialiased min-h-screen relative overflow-x-hidden">
 
-<div id="wp-rtc-container" class="min-h-screen w-full flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#f8fafc] font-sans" dir="rtl">
   <!-- افکت نوری پس‌زمینه گلس -->
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
     <div class="absolute -top-24 -right-24 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-60"></div>
-    <div class="absolute top-1/2 -left-24 w-80 h-80 bg-blue-100 rounded-full blur-3xl opacity-60"></div>
+    <div class="absolute top-1/3 -left-24 w-80 h-80 bg-blue-100 rounded-full blur-3xl opacity-60"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-amber-100 rounded-full blur-3xl opacity-50"></div>
   </div>
 
-  <div class="relative w-full max-w-5xl bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row gap-8 p-6 md:p-10 overflow-hidden">
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
     
-    <!-- بخش فرم ورودی‌ها -->
-    <div class="w-full md:w-3/5 flex flex-col space-y-6">
-      <header class="mb-2">
-        <h1 class="text-2xl font-black text-slate-800 tracking-tight leading-normal">
-          ماشین‌حساب قیمت <span class="text-orange-600">ترجمه</span>
-        </h1>
-        <p class="text-slate-500 mt-1.5 text-xs font-semibold flex items-center gap-1">
-          مترجم‌شدن • آخرین به‌روزرسانی نرخ‌ها: <span id="rtc-form-title" class="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px]">در حال بارگذاری...</span>
-        </p>
-      </header>
+    <!-- چیدمان اصلی با گرید (محتوا + نوار کناری راهنمای API) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-      <form id="rtc-rate-calculate-form" class="flex-1 space-y-5">
-        <div class="space-y-5">
-          <!-- حوزه ترجمه -->
-          <div>
-            <label for="rtc-translation-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">حوزهٔ ترجمه</label>
-            <select id="rtc-translation-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg font-medium">
-              <option value="">گزینه‌ای را انتخاب کنید.</option>
-              <option value="text">📄 ترجمهٔ کتبی</option>
-              <option value="interpret">🎙️ ترجمهٔ شفاهی</option>
-              <option value="media">🎬 ترجمهٔ رسانه</option>
-              <option value="apps">📱 بومی‌سازی وبگاه و اپلیکیشن</option>
-            </select>
-          </div>
+      <!-- ستون اصلی (ماشین‌حساب + توضیحات کامل نرخ‌نامه) -->
+      <main class="lg:col-span-8 space-y-10">
 
-          <!-- بخش پارامترهای کتبی -->
-          <div id="rtc-text-parameters" class="rtc-parameter-group space-y-5" style="display: none">
-            <div>
-              <label for="rtc-text-translation-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">نوع ترجمهٔ کتبی</label>
-              <select id="rtc-text-translation-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="human">ترجمهٔ انسانی</option>
-                <option value="machine">ترجمهٔ ماشینی</option>
-                <option value="analysis">ارزیابی کیفیت ترجمه</option>
-                <option value="edit-human">اصلاح ترجمهٔ انسانی</option>
-                <option value="edit-machine">اصلاح ترجمهٔ ماشینی</option>
-                <option value="author">تولید محتوا (جستجو + ترجمه)</option>
-              </select>
-            </div>
-
-            <div id="rtc-text-translation-skill-parameter" class="transition-all duration-300">
-              <label for="rtc-text-translation-skill" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">رتبهٔ مترجم</label>
-              <select id="rtc-text-translation-skill" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="level-1">مترجم سطح ۱</option>
-                <option value="level-2">مترجم سطح ۲</option>
-                <option value="level-3">مترجم سطح ۳</option>
-                <option value="level-4">مترجم سطح ۴</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="rtc-text-translation-speed" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">زمان تحویل (روزانه)</label>
-              <select id="rtc-text-translation-speed" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="regular">عادی (۲۵۰۰ کلمه)</option>
-                <option value="fast">نیمه‌فوری (۳۵۰۰ کلمه)</option>
-                <option value="urgent">فوری (۵۰۰۰ کلمه)</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="rtc-text-translation-topic" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">موضوع ترجمه</label>
-              <select id="rtc-text-translation-topic" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="general">عمومی</option>
-                <option value="engineering">فنی مهندسی</option>
-                <option value="executive">اجرایی</option>
-                <option value="business">تجاری</option>
-                <option value="medical">پزشکی</option>
-                <option value="legal">قضایی</option>
-                <option value="abstract">نظری فلسفی</option>
-                <option value="literature">ادبی</option>
-                <option value="other">سایر</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="rtc-text-translation-language" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">زبان ترجمه</label>
-              <select id="rtc-text-translation-language" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="en-to-fa">انگلیسی به فارسی</option>
-                <option value="fa-to-en">فارسی به انگلیسی</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- بخش پارامترهای شفاهی -->
-          <div id="rtc-interpret-parameters" class="rtc-parameter-group space-y-5" style="display: none">
-            <div>
-              <label for="rtc-interpret-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">نوع ترجمهٔ شفاهی</label>
-              <select id="rtc-interpret-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="simultaneous">همزمان</option>
-                <option value="consecutive">پیاپی ـ همراه</option>
-                <option value="remote">تلفنی</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- بخش پارامترهای رسانه -->
-          <div id="rtc-media-parameters" class="rtc-parameter-group space-y-5" style="display: none">
-            <div>
-              <label for="rtc-media-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">نوع ترجمهٔ رسانه</label>
-              <select id="rtc-media-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="only-transcribe">پیاده‌سازی بدون ترجمه</option>
-                <option value="only-translate">ترجمه بدون پیاده‌سازی</option>
-                <option value="transcribe-translate">پیاده‌سازی و ترجمه</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- بخش پارامترهای مشترک -->
-          <div id="rtc-common-parameters" class="rtc-parameter-group space-y-5" style="display: none">
-            <div id="rtc-common-language-parameter" class="rtc-parameter-group" style="display: none">
-              <label for="rtc-common-language" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">زبان ترجمه</label>
-              <select id="rtc-common-language" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg form-select">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="en-to-fa">انگلیسی ـ فارسی</option>
-                <option value="fa-to-en">سایر زبان‌ها ـ فارسی</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="rtc-common-skill" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">رتبهٔ مترجم</label>
-              <select id="rtc-common-skill" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="level-1-2">مترجم سطح ۱ و ۲</option>
-                <option value="level-3-4">مترجم سطح ۳ و ۴</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="rtc-common-topic" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">موضوع ترجمه</label>
-              <select id="rtc-common-topic" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base md:text-lg rtc-multiplier">
-                <option value="">گزینه‌ای را انتخاب کنید.</option>
-                <option value="general">عمومی</option>
-                <option value="special">تخصصی</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- حجم کار -->
-          <div id="rtc-work-parameter" class="rtc-parameter-group space-y-2" style="display: none">
-            <label class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">حجم کار</label>
-            <div class="relative">
-              <input id="rtc-work-amount" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 text-lg md:text-xl font-bold focus:outline-none transition-all" type="number" step="1" min="0" placeholder="مثال: ۱۰۰۰" />
-              <span class="absolute left-5 top-1/2 -translate-y-1/2 text-orange-600 font-extrabold text-sm bg-orange-100/90 backdrop-blur px-3 py-1.5 rounded-xl border border-orange-200/50">
-                <span id="rtc-work-unit"> - </span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </form>
-
-      <p class="mt-8 text-slate-400 text-[14px] font-semibold pr-1">
-        <a href="https://motarjemshodan.ir/" target="_blank" rel="noopener noreferrer" class="block text-center hover:text-orange-300 font-bold transition-all duration-300 transform hover:-translate-y-1 text-base md:text-s">
-          » راهنمای نرخ‌نامهٔ ترجمه
-        </a>
-      </p>
-    </div>
-
-    <!-- بخش نتایج هوشمند -->
-    <div class="w-full md:w-2/5 flex flex-col justify-start">
-      <div class="h-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-[2.2rem] p-6 md:p-8 flex flex-col shadow-2xl shadow-orange-500/20 text-white relative overflow-hidden group min-h-[420px] justify-between">
-        <div>
-          <h3 class="text-xl font-extrabold mb-8 flex items-center gap-2">
-            <span>تخمین هوشمند قیمت</span>
-          </h3>
+        <!-- ۱. کانتینر ماشین‌حساب -->
+        <div class="w-full bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row gap-8 p-6 md:p-10 overflow-hidden">
           
-          <div class="space-y-6">
-            <div class="flex justify-between items-center border-b border-orange-400/55 pb-3">
-              <span class="opacity-80 text-sm font-semibold">نرخ پایه (واحد):</span>
-              <span id="rtc-result-base-rate" class="text-lg font-black tracking-tight">فیلدهای بیشتری را مشخص کنید</span>
-            </div>
+          <!-- بخش فرم ورودی‌ها -->
+          <div class="w-full md:w-3/5 flex flex-col space-y-6">
+            <header class="mb-2">
+              <h1 class="text-2xl font-black text-slate-800 tracking-tight leading-normal">
+                ماشین‌حساب قیمت <span class="text-orange-600">ترجمه</span>
+              </h1>
+              <p class="text-slate-500 mt-1.5 text-xs font-semibold flex items-center gap-1">
+                مترجم‌شدن • آخرین به‌روزرسانی نرخ‌ها: <span id="rtc-form-title" class="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px]">در حال بارگذاری...</span>
+              </p>
+            </header>
 
-            <div class="flex justify-between items-center border-b border-orange-400/55 pb-3">
-              <span class="opacity-80 text-sm font-semibold">ضریب سختی/سرعت:</span>
-              <span id="rtc-result-multiplier" class="text-lg font-black tracking-tight">فیلدهای بیشتری را مشخص کنید</span>
-            </div>
+            <form id="rtc-rate-calculate-form" class="flex-1 space-y-5">
+              <div class="space-y-5">
+                <div>
+                  <label for="rtc-translation-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">حوزهٔ ترجمه</label>
+                  <select id="rtc-translation-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base font-medium">
+                    <option value="">گزینه‌ای را انتخاب کنید.</option>
+                    <option value="text">📄 ترجمهٔ کتبی</option>
+                    <option value="interpret">🎙️ ترجمهٔ شفاهی</option>
+                    <option value="media">🎬 ترجمهٔ رسانه</option>
+                    <option value="apps">📱 بومی‌سازی وبگاه و اپلیکیشن</option>
+                  </select>
+                </div>
 
-            <div class="flex justify-between items-center border-b border-orange-400/55 pb-3">
-              <span class="opacity-80 text-sm font-semibold">نرخ نهایی هر واحد:</span>
-              <span id="rtc-result-combined-rate" class="text-lg font-black tracking-tight">فیلدهای بیشتری را مشخص کنید</span>
+                <!-- پارامترهای کتبی -->
+                <div id="rtc-text-parameters" class="rtc-parameter-group space-y-5" style="display: none">
+                  <div>
+                    <label for="rtc-text-translation-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">نوع ترجمهٔ کتبی</label>
+                    <select id="rtc-text-translation-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="human">ترجمهٔ انسانی</option>
+                      <option value="machine">ترجمهٔ ماشینی</option>
+                      <option value="analysis">ارزیابی کیفیت ترجمه</option>
+                      <option value="edit-human">اصلاح ترجمهٔ انسانی</option>
+                      <option value="edit-machine">اصلاح ترجمهٔ ماشینی</option>
+                      <option value="author">تولید محتوا (جستجو + ترجمه)</option>
+                    </select>
+                  </div>
+
+                  <div id="rtc-text-translation-skill-parameter">
+                    <label for="rtc-text-translation-skill" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">رتبهٔ مترجم</label>
+                    <select id="rtc-text-translation-skill" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="level-1">مترجم سطح ۱ (تجربه کم، دانش فنی کم)</option>
+                      <option value="level-2">مترجم سطح ۲ (تجربه کم، دانش فنی قابل‌قبول)</option>
+                      <option value="level-3">مترجم سطح ۳ (تجربه کافی، دانش فنی کم)</option>
+                      <option value="level-4">مترجم سطح ۴ (تجربه کافی، دانش فنی قابل‌قبول)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="rtc-text-translation-speed" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">زمان تحویل (روزانه)</label>
+                    <select id="rtc-text-translation-speed" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="regular">عادی (۲۵۰۰ کلمه)</option>
+                      <option value="fast">نیمه‌فوری (۳۵۰۰ کلمه)</option>
+                      <option value="urgent">فوری (۵۰۰۰ کلمه)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="rtc-text-translation-topic" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">موضوع ترجمه</label>
+                    <select id="rtc-text-translation-topic" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="general">عمومی</option>
+                      <option value="engineering">فنی مهندسی</option>
+                      <option value="executive">اجرایی</option>
+                      <option value="business">تجاری</option>
+                      <option value="medical">پزشکی</option>
+                      <option value="legal">قضایی</option>
+                      <option value="abstract">نظری فلسفی</option>
+                      <option value="literature">ادبی</option>
+                      <option value="other">سایر</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="rtc-text-translation-language" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">زبان ترجمه</label>
+                    <select id="rtc-text-translation-language" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="en-to-fa">انگلیسی به فارسی</option>
+                      <option value="fa-to-en">فارسی به انگلیسی</option>
+                      <option value="langs1-to-fa">سایر زبان‌های گروه ۱ به فارسی</option>
+                      <option value="fa-to-langs1">فارسی به سایر زبان‌های گروه ۱</option>
+                      <option value="langs2-to-fa">سایر زبان‌های گروه ۲ به فارسی</option>
+                      <option value="fa-to-langs2">فارسی به سایر زبان‌های گروه ۲</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- پارامترهای شفاهی -->
+                <div id="rtc-interpret-parameters" class="rtc-parameter-group space-y-5" style="display: none">
+                  <div>
+                    <label for="rtc-interpret-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">نوع ترجمهٔ شفاهی</label>
+                    <select id="rtc-interpret-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="simultaneous">همزمان</option>
+                      <option value="consecutive">پیاپی ـ همراه</option>
+                      <option value="remote">صوتی / تلفنی</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- پارامترهای رسانه -->
+                <div id="rtc-media-parameters" class="rtc-parameter-group space-y-5" style="display: none">
+                  <div>
+                    <label for="rtc-media-type" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">نوع ترجمهٔ رسانه</label>
+                    <select id="rtc-media-type" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="only-transcribe">پیاده‌سازی بدون ترجمه</option>
+                      <option value="only-translate">ترجمه بدون پیاده‌سازی</option>
+                      <option value="transcribe-translate">پیاده‌سازی و ترجمه</option>
+                      <option value="translate-subtitles">ترجمهٔ زیرنویس</option>
+                      <option value="translate-double">ترجمهٔ دوبله</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- پارامترهای مشترک -->
+                <div id="rtc-common-parameters" class="rtc-parameter-group space-y-5" style="display: none">
+                  <div id="rtc-common-language-parameter" class="rtc-parameter-group" style="display: none">
+                    <label for="rtc-common-language" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">زبان ترجمه</label>
+                    <select id="rtc-common-language" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="en-to-fa">انگلیسی ـ فارسی</option>
+                      <option value="fa-to-en">سایر زبان‌ها ـ فارسی</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="rtc-common-skill" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">رتبهٔ مترجم</label>
+                    <select id="rtc-common-skill" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="level-1-2">مترجم سطح ۱ و ۲</option>
+                      <option value="level-3-4">مترجم سطح ۳ و ۴</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="rtc-common-topic" class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">موضوع ترجمه</label>
+                    <select id="rtc-common-topic" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 focus:outline-none cursor-pointer text-base">
+                      <option value="">گزینه‌ای را انتخاب کنید.</option>
+                      <option value="general">عمومی</option>
+                      <option value="special">تخصصی</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- ورودی حجم کار -->
+                <div id="rtc-work-parameter" class="rtc-parameter-group space-y-2" style="display: none">
+                  <label class="block text-xs font-bold text-slate-400 mb-2 mr-2 uppercase tracking-wider">حجم کار</label>
+                  <div class="relative">
+                    <input id="rtc-work-amount" class="w-full glass-input rounded-2xl py-4 px-5 text-slate-700 text-lg font-bold focus:outline-none" type="number" step="1" min="0" placeholder="مثال: ۱۰۰۰" />
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-orange-600 font-extrabold text-sm bg-orange-100/90 px-3 py-1.5 rounded-xl border border-orange-200/50">
+                      <span id="rtc-work-unit"> - </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- بخش نتایج هوشمند -->
+          <div class="w-full md:w-2/5 flex flex-col justify-start">
+            <div class="h-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-[2.2rem] p-6 md:p-8 flex flex-col shadow-2xl shadow-orange-500/20 text-white relative overflow-hidden justify-between min-h-[380px]">
+              <div>
+                <h3 class="text-xl font-extrabold mb-8">تخمین هوشمند قیمت</h3>
+                <div class="space-y-6">
+                  <div class="flex justify-between items-center border-b border-orange-400/55 pb-3">
+                    <span class="opacity-80 text-sm font-semibold">نرخ پایه (واحد):</span>
+                    <span id="rtc-result-base-rate" class="text-base font-black">مشخص نشده</span>
+                  </div>
+                  <div class="flex justify-between items-center border-b border-orange-400/55 pb-3">
+                    <span class="opacity-80 text-sm font-semibold">ضریب سختی/سرعت:</span>
+                    <span id="rtc-result-multiplier" class="text-base font-black">مشخص نشده</span>
+                  </div>
+                  <div class="flex justify-between items-center border-b border-orange-400/55 pb-3">
+                    <span class="opacity-80 text-sm font-semibold">نرخ نهایی هر واحد:</span>
+                    <span id="rtc-result-combined-rate" class="text-base font-black">مشخص نشده</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20">
+                <span class="block text-orange-100 text-xs font-bold mb-1.5">حداقل دستمزد کل:</span>
+                <div class="text-lg font-black flex items-baseline gap-2 flex-wrap">
+                  <span id="rtc-result-total-price" class="text-white drop-shadow">مشخص نشده</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-10 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-inner">
-          <span class="block text-orange-100 text-xs font-bold mb-1.5">حداقل دستمزد کل:</span>
-          <div class="text-lg font-black flex items-baseline gap-2 flex-wrap">
-            <span id="rtc-result-total-price" class="text-white drop-shadow-md">فیلدهای بیشتری را مشخص کنید</span>
+        <!-- ۲. بخش توضیحات کامل نرخ‌نامه (استخراج‌شده از مستند جدید) -->
+        <article class="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-[2.5rem] p-6 md:p-10 shadow-xl space-y-8 text-slate-700 leading-relaxed">
+          
+          <header class="border-b border-slate-200 pb-6">
+            <span class="bg-orange-100 text-orange-700 text-xs font-black px-3 py-1 rounded-full">پیشنهاد مترجم‌شدن</span>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-800 mt-3">نرخ‌نامهٔ تعرفهٔ خدمات ترجمه (سال ۱۴۰۵)</h2>
+            <p class="text-slate-500 text-sm mt-2 font-medium">طراحی‌شده مطابق با قانون کار ایران و با درنظرگرفتن ساعت کار روزانهٔ مترجمان</p>
+          </header>
+
+          <!-- مقدمه و تعاریف قانونی -->
+          <section class="space-y-4">
+            <p class="text-justify text-sm md:text-base">
+              این نرخ‌نامه <strong>تعرفهٔ پایه و حداقلی</strong> است. در بازار آزاد نمی‌توان و نباید قیمت مشخص (دستوری) برای کالا یا خدمات تعیین کرد. هدف از این نرخ‌نامه آگاه‌کردن مترجمان از حداقل دستمزد است تا فعالیت اقتصادیشان زیان‌ده نباشد؛ به این معنا که اگر وقت و انرژی خود را در کسب‌وکار دیگری صرف کنند عایدیشان بیشتر از این میزان می‌شود.
+            </p>
+            <div class="bg-amber-50 border-r-4 border-amber-500 p-4 rounded-xl text-xs md:text-sm text-amber-900 font-medium">
+              عوامل مختلفی مانند سختی و آسانی محتوا، موضوع کار، زمان تحویل، حساسیت، شرایط خاص، خواسته‌های ویژه کارفرما، سطح مهارت مترجم و... در افزایش دستمزد ترجمه تأثیرگذارند که در جداول ضریب آمده است. این ضریب‌ها حکم راهنما را دارند.
+            </div>
+          </section>
+
+          <!-- ۱۲ نکته کلیدی -->
+          <section class="space-y-4">
+            <h3 class="text-lg font-black text-slate-800 border-r-4 border-orange-500 pr-3">نکات کلیدی و الزامات قانونی</h3>
+            <ol class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm font-medium">
+              <li class="bg-slate-50 p-3 rounded-xl border border-slate-100">۱. تازه‌کاربودن، سادگی متن و... در نهایت حداقل دستمزد و نرخ پایه می‌شود نه کمتر از آن.</li>
+              <li class="bg-slate-50 p-3 rounded-xl border border-slate-100">۲. پرداخت کمتر از ۱۷۵ تومان/کلمه برای ترجمه انسانی، کمتر از حداقل دستمزد قانون کار (ساعتی ۷۰ هزار تومان) است.</li>
+              <li class="bg-slate-50 p-3 rounded-xl border border-slate-100">۳. طبق قانون کار می‌توان از مراکزی که کلمه‌ای کمتر از ۱۷۵ تومان پرداخت می‌کنند به اداره کار شکایت کرد.</li>
+              <li class="bg-slate-50 p-3 rounded-xl border border-slate-100">۴. میانگین دستمزد بین‌المللی ۶ سنت (حدود ۹,۵۰۰ تومان) برای هر کلمه است.</li>
+              <li class="bg-slate-50 p-3 rounded-xl border border-slate-100">۵. این نرخ‌نامه حداقل دستمزد مترجم است؛ دریافتی مراکز ترجمه حداقل ۳۰٪ بیشتر است.</li>
+              <li class="bg-slate-50 p-3 rounded-xl border border-slate-100">۶. میانگین سرعت ترجمه کتبی ۴۰۰ کلمه در ساعت و ۲۵۰۰ کلمه در روز است.</li>
+            </ol>
+          </section>
+
+          <!-- رتبه‌بندی مترجمان -->
+          <section class="space-y-4">
+            <h3 class="text-lg font-black text-slate-800 border-r-4 border-orange-500 pr-3">تعاریف رتبه‌بندی مترجمان</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span class="text-xs font-extrabold text-orange-600">سطح ۱ (ساده)</span>
+                <h4 class="font-bold text-sm text-slate-800">تجربه کم + دانش فنی کم</h4>
+                <p class="text-xs text-slate-500">سابقه کمتر از ۳ سال (کمتر از ۵۰۰ هزار کلمه). فاقد مدرک دانشگاهی مرتبط.</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span class="text-xs font-extrabold text-orange-600">سطح ۲ (تازه‌کار)</span>
+                <h4 class="font-bold text-sm text-slate-800">تجربه کم + دانش فنی قابل‌قبول</h4>
+                <p class="text-xs text-slate-500">سابقه کمتر از ۳ سال، اما دارای مدرک دانشگاهی یا دانش فنی قابل‌قبول.</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span class="text-xs font-extrabold text-orange-600">سطح ۳ (باتجربه)</span>
+                <h4 class="font-bold text-sm text-slate-800">تجربه کافی + دانش فنی کم</h4>
+                <p class="text-xs text-slate-500">سابقه بیش از ۳ سال (بیش از ۵۰۰ هزار کلمه). فاقد مدرک دانشگاهی مرتبط.</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span class="text-xs font-extrabold text-orange-600">سطح ۴ (متخصص)</span>
+                <h4 class="font-bold text-sm text-slate-800">تجربه کافی + دانش فنی قابل‌قبول</h4>
+                <p class="text-xs text-slate-500">سابقه بیش از ۳ سال همراه با مدرک دانشگاهی یا تسلط کامل فنی.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- فرمول محاسباتی به‌روزرسانی سالانه -->
+          <section class="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-2xl border border-orange-200/60 space-y-3">
+            <h3 class="text-base font-black text-orange-900">فرمول بهینه‌سازی و به‌روزرسانی سالانه نرخ‌نامه</h3>
+            <p class="text-xs md:text-sm text-slate-700 leading-relaxed">
+              در ابتدای هر سال با اعلام درصد افزایش حقوق شورای عالی کار، همان درصد به نرخ‌نامه فروردین اضافه می‌شود. برای نیم‌سال دوم (مهرماه)، نصف همان درصد اعلامی اضافه می‌گردد تا با تورم تثبیت شود:
+            </p>
+            <div class="bg-white/80 p-3 rounded-xl border border-orange-200 text-xs font-mono font-bold text-slate-800 text-center">
+              ساعت کار قانونی ماهانه (۱۷۶) × سرعت ترجمه در ساعت (۴۰۰) × نرخ پایه
+            </div>
+          </section>
+
+        </article>
+      </main>
+
+      <!-- نوار کناری (Sidebar): راهنمای استفاده از API -->
+      <aside class="lg:col-span-4 sticky top-6 space-y-6">
+        <div class="bg-slate-900 text-white rounded-[2.5rem] p-6 md:p-8 shadow-2xl border border-slate-800 relative overflow-hidden">
+          
+          <div class="flex items-center gap-2 text-orange-400 font-extrabold text-xs uppercase tracking-wider mb-2">
+            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+            مخصوص توسعه‌دهندگان
           </div>
+
+          <h3 class="text-xl font-black mb-3 text-white">راهنمای دریافت نرخ‌نامه از API</h3>
+          <p class="text-slate-400 text-xs leading-relaxed mb-6">
+            شما می‌توانید نرخ‌های بروزرسانی‌شدهٔ این پلتفرم را مستقیماً از طریق فایل JSON مرکزی در وب‌سایت، اپلیکیشن یا نرم‌افزار خود فراخوانی کنید.
+          </p>
+
+          <!-- آدرس Endpoint -->
+          <div class="space-y-2 mb-6">
+            <span class="text-[11px] font-bold text-slate-400 block">آدرس API (JSON):</span>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-orange-300 font-mono break-all select-all">
+              https://motarjemshodan.github.io/translation-rates/translation-rates-1405-1.json
+            </div>
+          </div>
+
+          <!-- نمونه کد JavaScript -->
+          <div class="space-y-2 mb-6">
+            <span class="text-[11px] font-bold text-slate-400 block">نمونه فراخوانی با JavaScript:</span>
+            <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] text-emerald-400 overflow-x-auto">
+fetch('https://motarjemshodan.github.io/translation-rates/translation-rates-1405-1.json')
+  .then(res => res.json())
+  .then(data => {
+    console.log("نرخ کتبی:", data['base-values']['text']['human']);
+  });</pre>
+          </div>
+
+          <!-- لیست فیلدهای کلیدی JSON -->
+          <div class="space-y-2 border-t border-slate-800 pt-4">
+            <span class="text-[11px] font-bold text-slate-400 block">ساختار کلیدهای JSON:</span>
+            <ul class="text-[11px] space-y-1.5 text-slate-300 font-mono">
+              <li><strong class="text-orange-400">last-update:</strong> تاریخ به‌روزرسانی</li>
+              <li><strong class="text-orange-400">base-values.text:</strong> قیمت‌های پایه کتبی</li>
+              <li><strong class="text-orange-400">multipliers:</strong> ضرایب رتبه، زبان و...</li>
+            </ul>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+            <a href="https://motarjemshodan.ir" target="_blank" class="text-xs text-slate-400 hover:text-orange-400 transition-colors font-bold">
+              پلتفرم آموزشی مترجم‌شدن ↗
+            </a>
+          </div>
+
         </div>
-      </div>
+      </aside>
+
     </div>
   </div>
-</div>
 
-<!-- اسکریپت اتصال و خواندن فایل JSON از گیت‌هاب -->
-<script>
-  (function() {
-    var TRANSLATION_RATES_URLS = [
-      './translation-rates-1405-1.json' // مسیر فایل JSON در ریپوزیتوری گیت‌هاب
-    ];
-    var PREFIX = 'rtc-';
-    var CURRENCY = 'تومان';
+  <!-- اسکریپت اصلی محاسبات و دریافت API -->
+  <script>
+    (function() {
+      var TRANSLATION_RATES_URLS = [
+        './translation-rates-1405-1.json'
+      ];
+      var PREFIX = 'rtc-';
+      var CURRENCY = 'تومان';
 
-    var FALLBACK_RATES = {
-      "last-update": "فروردین ۱۴۰۵",
-      "base-values": {
-        "text": { "human": 600, "machine": 150, "analysis": 75, "edit-human": 300, "edit-machine": 370, "author": 850 },
-        "interpret": {
-          "simultaneous": { "en-to-fa": 6000000, "fa-to-en": 7500000 },
-          "consecutive": { "en-to-fa": 3000000, "fa-to-en": 4000000 },
-          "remote": { "en-to-fa": 750000, "fa-to-en": 1000000 }
+      var FALLBACK_RATES = {
+        "last-update": "فروردین ۱۴۰۵",
+        "base-values": {
+          "text": { "human": 600, "machine": 150, "analysis": 75, "edit-human": 300, "edit-machine": 370, "author": 850 },
+          "interpret": {
+            "simultaneous": { "en-to-fa": 6000000, "fa-to-en": 7500000 },
+            "consecutive": { "en-to-fa": 3000000, "fa-to-en": 4000000 },
+            "remote": { "en-to-fa": 750000, "fa-to-en": 1000000 }
+          },
+          "media": {
+            "only-transcribe": { "en-to-fa": 30000, "fa-to-en": 50000 },
+            "only-translate": { "en-to-fa": 65000, "fa-to-en": 100000 },
+            "transcribe-translate": { "en-to-fa": 100000, "fa-to-en": 150000 },
+            "translate-subtitles": { "en-to-fa": 3500, "fa-to-en": 6000 },
+            "translate-double": { "en-to-fa": 4000, "fa-to-en": 6500 }
+          },
+          "apps": { "en-to-fa": 650, "fa-to-en": 1200 }
         },
-        "media": {
-          "only-transcribe": { "en-to-fa": 30000, "fa-to-en": 50000 },
-          "only-translate": { "en-to-fa": 65000, "fa-to-en": 100000 },
-          "transcribe-translate": { "en-to-fa": 100000, "fa-to-en": 150000 }
-        },
-        "apps": { "en-to-fa": 650, "fa-to-en": 1200 }
-      },
-      "multipliers": {
-        "text": {
-          "text-translation-skill": { "level-1": 1, "level-2": 1.2, "level-3": 1.4, "level-4": 1.6 },
-          "text-translation-speed": { "regular": 1, "fast": 1.4, "urgent": 1.8 },
-          "text-translation-topic": { "general": 1, "engineering": 1.2, "executive": 1.2, "business": 1.2, "medical": 1.4, "legal": 1.4, "abstract": 1.6, "literature": 1.6, "other": 1.2 },
-          "text-translation-language": { "en-to-fa": 1, "fa-to-en": 2 }
-        },
-        "common": {
-          "common-skill": { "level-1-2": 1, "level-3-4": 1.2 },
-          "common-topic": { "general": 1, "special": 1.2 }
-        }
-      }
-    };
-
-    var calculator_definitions = {
-      work_units: {
-        'text': 'کلمه',
-        'interpret': 'ساعت',
-        'media': { 'other': 'دقیقه' },
-        'apps': 'کلمه'
-      },
-      baserate_parameters: {
-        'text': ['text-translation-type'],
-        'interpret': ['interpret-type', 'common-language'],
-        'media': ['media-type', 'common-language'],
-        'apps': ['common-language']
-      },
-      parameter_groups: {
-        '': [],
-        'text': [PREFIX + 'text-parameters', PREFIX + 'work-parameter'],
-        'interpret': [PREFIX + 'interpret-parameters', PREFIX + 'common-parameters', PREFIX + 'common-language-parameter', PREFIX + 'work-parameter'],
-        'media': [PREFIX + 'media-parameters', PREFIX + 'common-parameters', PREFIX + 'common-language-parameter', PREFIX + 'work-parameter'],
-        'apps': [PREFIX + 'common-parameters', PREFIX + 'common-language-parameter', PREFIX + 'work-parameter']
-      },
-      translation_rates: null
-    };
-
-    function rtc_initialize() {
-      var stored = localStorage.getItem("translation-rates");
-      var initial_rates = stored ? JSON.parse(stored) : FALLBACK_RATES;
-      calculator_definitions.translation_rates = initial_rates;
-      _rtctext('form-title', initial_rates['last-update']);
-
-      document.getElementById('rtc-translation-type').addEventListener('change', update_translation_type);
-      document.getElementById('rtc-text-translation-type').addEventListener('change', update_text_translation_type);
-      document.getElementById('rtc-rate-calculate-form').querySelectorAll('select, input').forEach(function(el) {
-        el.addEventListener('change', display_rates);
-        el.addEventListener('input', display_rates);
-      });
-
-      update_translation_type();
-      display_rates();
-
-      fetch_translation_rates(0).then(function(result) {
-        if (result != null) {
-          calculator_definitions.translation_rates = result;
-          _rtctext('form-title', result['last-update']);
-          display_rates();
-        }
-      });
-    }
-
-    function update_translation_type() {
-      var translation_type = _rtcval('translation-type');
-      document.querySelectorAll('.' + PREFIX + 'parameter-group').forEach(function(element) {
-        if (calculator_definitions.parameter_groups[translation_type].includes(element.id)) {
-          element.style.display = '';
-        } else {
-          element.style.display = 'none';
-        }
-      });
-      if (translation_type == 'text') update_text_translation_type();
-      document.getElementById(PREFIX + 'work-amount').value = '';
-      if (translation_type != '') _rtctext('work-unit', get_work_unit());
-    }
-
-    function update_text_translation_type() {
-      var hidettt = ['analysis', 'edit-human', 'edit-machine'].includes(_rtcval('text-translation-type'));
-      document.getElementById(PREFIX + 'text-translation-skill-parameter').style.display = hidettt ? 'none' : '';
-    }
-
-    function display_rates() {
-      var calculated_rates = calculate_rates();
-      for (var key in calculated_rates) {
-        var value = calculated_rates[key];
-        if (value == 0) {
-          _rtctext('result-' + key, 'فیلدهای بیشتری را مشخص کنید');
-        } else {
-          if (key == 'base-rate') _rtctext('result-base-rate', get_work_unit_per_item() + ' ' + _rtcformat(value, 0) + ' ' + CURRENCY);
-          else if (key == 'multiplier') _rtctext('result-multiplier', '⨯ ' + _rtcformat(value, 2));
-          else if (key == 'combined-rate') _rtctext('result-combined-rate', get_work_unit_per_item() + ' ' + _rtcformat(value, 0) + ' ' + CURRENCY);
-          else if (key == 'total-price') _rtctext('result-total-price', _rtcformat(value, 0) + ' ' + CURRENCY);
-        }
-      }
-    }
-
-    function calculate_rates() {
-      var results = { 'base-rate': 0, 'multiplier': 0, 'combined-rate': 0, 'total-price': 0 };
-      var translation_type = _rtcval('translation-type');
-      if (translation_type != '') {
-        results['base-rate'] = calculate_base_rate(translation_type);
-        var multipliers;
-        if (translation_type == 'text') {
-          multipliers = Object.assign({}, calculator_definitions.translation_rates['multipliers']['text']);
-          if (['analysis', 'edit-human', 'edit-machine'].includes(_rtcval('text-translation-type'))) {
-            delete multipliers['text-translation-skill'];
+        "multipliers": {
+          "text": {
+            "text-translation-skill": { "level-1": 1, "level-2": 1.2, "level-3": 1.4, "level-4": 1.6 },
+            "text-translation-speed": { "regular": 1, "fast": 1.4, "urgent": 1.8 },
+            "text-translation-topic": { "general": 1, "engineering": 1.2, "executive": 1.2, "business": 1.2, "medical": 1.4, "legal": 1.4, "abstract": 1.6, "literature": 1.6, "other": 1.2 },
+            "text-translation-language": { "en-to-fa": 1, "fa-to-en": 2, "langs1-to-fa": 1.6, "fa-to-langs1": 3, "langs2-to-fa": 2, "fa-to-langs2": 4 }
+          },
+          "common": {
+            "common-skill": { "level-1-2": 1, "level-3-4": 1.2 },
+            "common-topic": { "general": 1, "special": 1.2 }
           }
-        } else {
-          multipliers = calculator_definitions.translation_rates['multipliers']['common'];
         }
-        results['multiplier'] = calculate_multipliers(multipliers);
-        results['combined-rate'] = results['base-rate'] * results['multiplier'];
-        var amt = parseFloat(_rtcval('work-amount'));
-        results['total-price'] = results['combined-rate'] * (isNaN(amt) ? 0 : amt);
+      };
+
+      var calculator_definitions = {
+        work_units: { 'text': 'کلمه', 'interpret': 'روز / ساعت', 'media': { 'translate_subtitles': 'خط', 'translate_double': 'خط', 'other': 'دقیقه' }, 'apps': 'کلمه' },
+        baserate_parameters: { 'text': ['text-translation-type'], 'interpret': ['interpret-type', 'common-language'], 'media': ['media-type', 'common-language'], 'apps': ['common-language'] },
+        parameter_groups: {
+          '': [],
+          'text': [PREFIX + 'text-parameters', PREFIX + 'work-parameter'],
+          'interpret': [PREFIX + 'interpret-parameters', PREFIX + 'common-parameters', PREFIX + 'common-language-parameter', PREFIX + 'work-parameter'],
+          'media': [PREFIX + 'media-parameters', PREFIX + 'common-parameters', PREFIX + 'common-language-parameter', PREFIX + 'work-parameter'],
+          'apps': [PREFIX + 'common-parameters', PREFIX + 'common-language-parameter', PREFIX + 'work-parameter']
+        },
+        translation_rates: null
+      };
+
+      function rtc_initialize() {
+        var stored = localStorage.getItem("translation-rates");
+        var initial_rates = stored ? JSON.parse(stored) : FALLBACK_RATES;
+        calculator_definitions.translation_rates = initial_rates;
+        _rtctext('form-title', initial_rates['last-update']);
+
+        document.getElementById('rtc-translation-type').addEventListener('change', update_translation_type);
+        document.getElementById('rtc-text-translation-type').addEventListener('change', update_text_translation_type);
+        document.getElementById('rtc-rate-calculate-form').querySelectorAll('select, input').forEach(function(el) {
+          el.addEventListener('change', display_rates);
+          el.addEventListener('input', display_rates);
+        });
+
+        update_translation_type();
+        display_rates();
+
+        fetch_translation_rates(0).then(function(result) {
+          if (result != null) {
+            calculator_definitions.translation_rates = result;
+            _rtctext('form-title', result['last-update']);
+            display_rates();
+          }
+        });
       }
-      return results;
-    }
 
-    function calculate_base_rate(translation_type) {
-      var parameters = calculator_definitions.baserate_parameters;
-      var runner = calculator_definitions.translation_rates['base-values'][translation_type];
-      for (var i = 0; i < parameters[translation_type].length; i++) {
-        var value = _rtcval(parameters[translation_type][i]);
-        if (value == '') return 0;
-        runner = runner[value];
+      function update_translation_type() {
+        var translation_type = _rtcval('translation-type');
+        document.querySelectorAll('.' + PREFIX + 'parameter-group').forEach(function(element) {
+          if (calculator_definitions.parameter_groups[translation_type].includes(element.id)) {
+            element.style.display = '';
+          } else {
+            element.style.display = 'none';
+          }
+        });
+        if (translation_type == 'text') update_text_translation_type();
+        document.getElementById(PREFIX + 'work-amount').value = '';
+        if (translation_type != '') _rtctext('work-unit', get_work_unit());
       }
-      return runner;
-    }
 
-    function calculate_multipliers(parameters) {
-      var result = 1;
-      var keys = Object.keys(parameters);
-      for (var i = 0; i < keys.length; i++) {
-        var choice = _rtcval(keys[i]);
-        if (choice == '') return 0;
-        var value = parameters[keys[i]][choice];
-        if (value === undefined) return 0;
-        result *= value;
+      function update_text_translation_type() {
+        var hidettt = ['analysis', 'edit-human', 'edit-machine'].includes(_rtcval('text-translation-type'));
+        document.getElementById(PREFIX + 'text-translation-skill-parameter').style.display = hidettt ? 'none' : '';
       }
-      return result;
-    }
 
-    function get_work_unit() {
-      return calculator_definitions.work_units[_rtcval('translation-type')] || '';
-    }
-
-    function get_work_unit_per_item() {
-      var unit = get_work_unit();
-      return unit ? (unit.endsWith('ه') ? unit + ' ای' : unit + 'ی') : '';
-    }
-
-    async function fetch_translation_rates(url_index) {
-      try {
-        const response = await fetch(TRANSLATION_RATES_URLS[url_index]);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        localStorage.setItem("translation-rates", JSON.stringify(data));
-        return data;
-      } catch (error) {
-        return JSON.parse(localStorage.getItem("translation-rates")) || FALLBACK_RATES;
+      function display_rates() {
+        var calculated_rates = calculate_rates();
+        for (var key in calculated_rates) {
+          var value = calculated_rates[key];
+          if (value == 0) {
+            _rtctext('result-' + key, 'مشخص نشده');
+          } else {
+            if (key == 'base-rate') _rtctext('result-base-rate', get_work_unit_per_item() + ' ' + _rtcformat(value, 0) + ' ' + CURRENCY);
+            else if (key == 'multiplier') _rtctext('result-multiplier', '⨯ ' + _rtcformat(value, 2));
+            else if (key == 'combined-rate') _rtctext('result-combined-rate', get_work_unit_per_item() + ' ' + _rtcformat(value, 0) + ' ' + CURRENCY);
+            else if (key == 'total-price') _rtctext('result-total-price', _rtcformat(value, 0) + ' ' + CURRENCY);
+          }
+        }
       }
-    }
 
-    function _rtcformat(number, fraction) {
-      return new Intl.NumberFormat('en-US', { maximumFractionDigits: fraction }).format(number);
-    }
-    function _rtcval(id) { var el = document.getElementById(PREFIX + id); return el ? el.value : ''; }
-    function _rtctext(id, val) { var el = document.getElementById(PREFIX + id); if (el) el.textContent = val; }
+      function calculate_rates() {
+        var results = { 'base-rate': 0, 'multiplier': 0, 'combined-rate': 0, 'total-price': 0 };
+        var translation_type = _rtcval('translation-type');
+        if (translation_type != '') {
+          results['base-rate'] = calculate_base_rate(translation_type);
+          var multipliers;
+          if (translation_type == 'text') {
+            multipliers = Object.assign({}, calculator_definitions.translation_rates['multipliers']['text']);
+            if (['analysis', 'edit-human', 'edit-machine'].includes(_rtcval('text-translation-type'))) {
+              delete multipliers['text-translation-skill'];
+            }
+          } else {
+            multipliers = calculator_definitions.translation_rates['multipliers']['common'];
+          }
+          results['multiplier'] = calculate_multipliers(multipliers);
+          results['combined-rate'] = results['base-rate'] * results['multiplier'];
+          var amt = parseFloat(_rtcval('work-amount'));
+          results['total-price'] = results['combined-rate'] * (isNaN(amt) ? 0 : amt);
+        }
+        return results;
+      }
 
-    rtc_initialize();
-  })();
-</script>
+      function calculate_base_rate(translation_type) {
+        var parameters = calculator_definitions.baserate_parameters;
+        var runner = calculator_definitions.translation_rates['base-values'][translation_type];
+        for (var i = 0; i < parameters[translation_type].length; i++) {
+          var value = _rtcval(parameters[translation_type][i]);
+          if (value == '') return 0;
+          runner = runner[value];
+        }
+        return runner;
+      }
 
+      function calculate_multipliers(parameters) {
+        var result = 1;
+        var keys = Object.keys(parameters);
+        for (var i = 0; i < keys.length; i++) {
+          var choice = _rtcval(keys[i]);
+          if (choice == '') return 0;
+          var value = parameters[keys[i]][choice];
+          if (value === undefined) return 0;
+          result *= value;
+        }
+        return result;
+      }
+
+      function get_work_unit() {
+        return calculator_definitions.work_units[_rtcval('translation-type')] || '';
+      }
+
+      function get_work_unit_per_item() {
+        var unit = get_work_unit();
+        return unit ? (unit.endsWith('ه') ? unit + ' ای' : unit + 'ی') : '';
+      }
+
+      async function fetch_translation_rates(url_index) {
+        try {
+          const response = await fetch(TRANSLATION_RATES_URLS[url_index]);
+          if (!response.ok) throw new Error();
+          const data = await response.json();
+          localStorage.setItem("translation-rates", JSON.stringify(data));
+          return data;
+        } catch (error) {
+          return JSON.parse(localStorage.getItem("translation-rates")) || FALLBACK_RATES;
+        }
+      }
+
+      function _rtcformat(number, fraction) {
+        return new Intl.NumberFormat('en-US', { maximumFractionDigits: fraction }).format(number);
+      }
+      function _rtcval(id) { var el = document.getElementById(PREFIX + id); return el ? el.value : ''; }
+      function _rtctext(id, val) { var el = document.getElementById(PREFIX + id); if (el) el.textContent = val; }
+
+      rtc_initialize();
+    })();
+  </script>
 </body>
 </html>
