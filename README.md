@@ -1,0 +1,2 @@
+# translation-rates
+نرخ‌نامه ترجمه
