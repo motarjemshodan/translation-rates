@@ -6,7 +6,14 @@
   <title>Translation Calculator Motarjemshodan</title>
   <!-- لود کردن فونت وزیرمتن و فریمورک Tailwind CSS -->
   <link href="https://motarjemshodan.ir/assets/vazirmatn-font.css" rel="stylesheet" />
-  <script src="https://motarjemshodan.ir/assets/tailwindcss-3.4.17.min.js"></script>
+  <script src="https://motarjemshodan.ir/assets/tailwindcss-3.4.17.min.js">
+    (function() {
+    var TRANSLATION_RATES_URLS = [
+      './translation-rates-1405-1.json'
+    ];
+    var PREFIX = 'rtc-';
+    var CURRENCY = 'تومان';
+  </script>
   <style>
     #wp-rtc-container {
       font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif !important;
