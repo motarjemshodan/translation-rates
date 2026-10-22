@@ -13,9 +13,10 @@
 
 **دستمزد پایهٔ ترجمه | پیشنهادی مترجم‌شدن**
 
-![سال ۱۴۰۵](https://img.shields.io/badge/سال_۱۴۰۵-نیم‌سال_دوم-176B87?style=flat-square)
-![زبان فارسی](https://img.shields.io/badge/زبان-فارسی-3A7D6A?style=flat-square)
-![موضوع](https://img.shields.io/badge/موضوع-نرخ‌نامه_ترجمه-8A5AA6?style=flat-square)
+![Year](https://img.shields.io/badge/Year-1405-176B87?style=flat-square)
+![Period](https://img.shields.io/badge/Period-Second_Half-3A7D6A?style=flat-square)
+![Language](https://img.shields.io/badge/Language-Persian-8A5AA6?style=flat-square)
+
 </div>
 
 ---
