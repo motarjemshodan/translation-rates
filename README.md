@@ -18,6 +18,7 @@
 ![Language](https://img.shields.io/badge/Language-Persian-8A5AA6?style=flat-square)
 
 </div>
+<div dir="rtl" align="right">
 
 ---
 
@@ -248,3 +249,6 @@
 - **صفحهٔ اصلی نرخ‌نامه:** [نرخ‌نامهٔ پیشنهادی ترجمه ۱۴۰۵](URL_تأییدشده_صفحه_نرخنامه)
 - **وبگاه مترجم‌شدن:** https://motarjemshodan.ir/
 - **کانال تلگرام مترجم‌شدن:** https://t.me/motarjemshodan
+
+</div>
+
